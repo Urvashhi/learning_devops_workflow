@@ -24,7 +24,7 @@ class Post extends Model
     public function getImageUrlAttribute($value)
     {
         return $value
-            ? asset('storage/' . $value)
+            ? asset($value)
             : null;
     }
 }
