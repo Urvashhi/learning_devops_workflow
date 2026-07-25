@@ -30,7 +30,10 @@ jobs:
           script: |
             cd /var/www/learning_devops_workflow
 
-            git pull origin main
+            git fetch origin
+            git checkout master
+            git pull origin master
+
 
             composer install --no-dev --optimize-autoloader
 
