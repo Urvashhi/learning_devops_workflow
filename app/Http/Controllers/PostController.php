@@ -49,8 +49,8 @@ class PostController extends Controller
             if (!$path) {
                 return response()->json([
                             'hasFile' => $request->hasFile('image_url'),
-                            'path' => $path ?? null,
-                            'url' => isset($path) ? Storage::disk('s3')->url($path) : null,
+                            'path' => $path,
+                            'url' => Storage::disk('s3')->url($path),
                         ]);
             }
             $imageUrl = Storage::disk('s3')->url($path);
@@ -65,7 +65,7 @@ class PostController extends Controller
         return response()->json([
                 'message' => 'Post created successfully',
                 'post' => $post,
-                'path' => $path
+                'path' => $imageUrl
             ]);
     }
 }
