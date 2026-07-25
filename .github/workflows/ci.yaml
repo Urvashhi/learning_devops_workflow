@@ -29,6 +29,15 @@ jobs:
 
       - run: composer install --no-interaction --prefer-dist
 
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Install Reviewdog
+        uses: reviewdog/action-setup@v1
+
+
       - name: Install Reviewdog
         uses: reviewdog/action-setup@v1
 
