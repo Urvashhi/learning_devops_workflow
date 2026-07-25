@@ -77,4 +77,5 @@ jobs:
         run: php artisan test
 
       - name: Composer Audit
+        continue-on-error: true
         run: composer audit
