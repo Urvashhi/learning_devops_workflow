@@ -36,7 +36,7 @@ jobs:
         run: php artisan key:generate
 
       - name: Clear Config Cache
-        run: php artisan config
+        run: php artisan config:clear
 
       - name: Install Reviewdog
         uses: reviewdog/action-setup@v1
