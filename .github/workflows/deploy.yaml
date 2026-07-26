@@ -33,7 +33,14 @@ jobs:
             whoami
             echo $HOME
 
-             sudo -i bash <<'EOF'
+            sudo -i bash <<'EOF'
+
+              whoami
+              echo $HOME
+
+              ls -la ~/.ssh
+
+              ssh -T git@github.com || true
             cd /var/www/learning_devops_workflow
 
             git fetch origin
