@@ -33,25 +33,31 @@ jobs:
             whoami
             echo $HOME
 
-            sudo -i bash <<'EOF'
+            sudo -i <<'EOF'
+            whoami
+            echo $HOME
 
-              whoami
-              echo $HOME
-
-              ls -la ~/.ssh
-
-              ssh -T git@github.com || true
             cd /var/www/learning_devops_workflow
 
+            git status
+            git branch -vv
+            git remote -v
+
             git fetch origin
-            git checkout master
+
+            echo "HEAD:"
+            git rev-parse HEAD
+
+            echo "ORIGIN:"
+            git rev-parse origin/master
+
             git pull origin master
+
+            echo "AFTER PULL:"
+            git rev-parse HEAD
 
             php artisan migrate --force
             php artisan optimize:clear
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
 
             systemctl restart apache2
             EOF
