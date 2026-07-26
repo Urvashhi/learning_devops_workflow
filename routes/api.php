@@ -26,11 +26,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:api')->group(function () {
 
     Route::get('/posts', [PostController::class, 'index']);
-    
+
     Route::post('/posts', [PostController::class, 'store']);
 
     // Route::get('/profile', function (Request $request) {
     //     return $request->user();
     // });
-
 });

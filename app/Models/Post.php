@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Post extends Model
 {
     use HasFactory;
 
+    //fillable
      protected $fillable = [
         'user_id',
         'title',
@@ -16,7 +19,7 @@ class Post extends Model
         'image_url'
     ];
 
-    public function user()
+    public function user() : BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -24,7 +27,7 @@ class Post extends Model
     public function getImageUrlAttribute($value)
     {
         return $value
-            ? asset('storage/' . $value)
+            ? asset($value)
             : null;
     }
 }
