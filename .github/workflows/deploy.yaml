@@ -30,6 +30,17 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            whoami
+            echo $HOME
+
+            ls -la /root/.ssh
+
+            cat /root/.ssh/config || true
+
+            cat /root/.ssh/known_hosts
+
+            ssh -vT git@github.com || true
+
             cd /var/www/learning_devops_workflow
 
             git fetch origin
