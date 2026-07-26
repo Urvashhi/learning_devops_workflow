@@ -3,7 +3,7 @@ name: Laravel CI/CD
 on:
   push:
     branches:
-      - '**'
+      - master
 
 jobs:
   deploy:
@@ -33,29 +33,18 @@ jobs:
             whoami
             echo $HOME
 
-            ls -la /root/.ssh
-
-            cat /root/.ssh/config || true
-
-            cat /root/.ssh/known_hosts
-
-            ssh -vT git@github.com || true
-
+             sudo -i bash <<'EOF'
             cd /var/www/learning_devops_workflow
 
             git fetch origin
             git checkout master
             git pull origin master
 
-
             php artisan migrate --force
-
             php artisan optimize:clear
-
             php artisan config:cache
-
             php artisan route:cache
-
             php artisan view:cache
 
-            sudo systemctl restart apache2
+            systemctl restart apache2
+            EOF
