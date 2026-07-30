@@ -90,6 +90,9 @@ jobs:
             --parameters commands='[
               "pwd",
               "whoami",
+              "cd /var/www/learning_devops_workflow",
+               "pwd",
+              "whoami",
               "ls -l"
             ]' \
             --query "Command.CommandId" \
