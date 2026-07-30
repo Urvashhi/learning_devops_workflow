@@ -1,4 +1,55 @@
-name: Laravel CI/CD
+# name: Laravel CI/CD
+
+# on:
+#   push:
+#     branches:
+#       - master
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v4
+
+#       - name: Setup PHP
+#         uses: shivammathur/setup-php@v2
+#         with:
+#           php-version: '8.3'
+
+#         # - name: Install Composer Dependencies
+#         # run: composer install --no-interaction --prefer-dist --no-progress
+#         # composer install --no-dev --optimize-autoloader
+
+
+#       - name: Deploy to EC2
+#         uses: appleboy/ssh-action@v1.2.0
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USER }}
+#           key: ${{ secrets.EC2_KEY }}
+#           script: |
+#             whoami
+#             echo $HOME
+
+#             sudo -i <<'EOF'
+#             whoami
+#             echo $HOME
+
+#             cd /var/www/learning_devops_workflow
+
+#             git fetch origin
+#             git checkout master
+#             git pull origin master
+
+#             php artisan migrate --force
+#             php artisan optimize:clear
+
+#             EOF
+
+
+name: Laravel Deploy
 
 on:
   push:
@@ -10,54 +61,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          php-version: '8.3'
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-        # - name: Install Composer Dependencies
-        # run: composer install --no-interaction --prefer-dist --no-progress
-        # composer install --no-dev --optimize-autoloader
+      - name: Get EC2 Instances from ASG
+        id: instances
+        run: |
+          INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups \
+            --auto-scaling-group-names "${{ secrets.ASG_NAME }}" \
+            --query "AutoScalingGroups[0].Instances[?LifecycleState=='InService'].InstanceId" \
+            --output text)
 
+          echo "INSTANCE_IDS=$INSTANCE_IDS" >> $GITHUB_ENV
+          echo "Instances: $INSTANCE_IDS"
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            whoami
-            echo $HOME
+      - name: Run ls command via SSM
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids $INSTANCE_IDS \
+            --document-name "AWS-RunShellScript" \
+            --comment "Test SSM" \
+            --parameters commands='[
+              "ls -l"
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
 
-            sudo -i <<'EOF'
-            whoami
-            echo $HOME
+          echo "COMMAND_ID=$COMMAND_ID" >> $GITHUB_ENV
 
-            cd /var/www/learning_devops_workflow
+      - name: Wait for SSM
+        run: sleep 20
 
-            git status
-            git branch -vv
-            git remote -v
-
-            git fetch origin
-
-            echo "HEAD:"
-            git rev-parse HEAD
-
-            echo "ORIGIN:"
-            git rev-parse origin/master
-
-            git pull origin master
-
-            echo "AFTER PULL:"
-            git rev-parse HEAD
-
-            php artisan migrate --force
-            php artisan optimize:clear
-
-            systemctl restart apache2
-            EOF
+      - name: Show Output
+        run: |
+          for INSTANCE in $INSTANCE_IDS
+          do
+            echo "===== $INSTANCE ====="
+            aws ssm get-command-invocation \
+              --command-id $COMMAND_ID \
+              --instance-id $INSTANCE \
+              --query StandardOutputContent \
+              --output text
+          done
