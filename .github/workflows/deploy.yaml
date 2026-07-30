@@ -88,6 +88,8 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Test SSM" \
             --parameters commands='[
+              "pwd",
+              "whoami",
               "ls -l"
             ]' \
             --query "Command.CommandId" \
