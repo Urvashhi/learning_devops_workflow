@@ -56,6 +56,10 @@ on:
     branches:
       - master
 
+permissions:
+  id-token: write
+  contents: read
+      
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -63,10 +67,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-        permissions:
-          id-token: write
-          contents: read
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
