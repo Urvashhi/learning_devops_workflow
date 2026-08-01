@@ -85,25 +85,51 @@ jobs:
           echo "INSTANCE_IDS=$INSTANCE_IDS" >> $GITHUB_ENV
           echo "Instances: $INSTANCE_IDS"
 
-      - name: Run ls command via SSM
+      
+      - name: Deploy Laravel via SSM
         run: |
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids $INSTANCE_IDS \
             --document-name "AWS-RunShellScript" \
-            --comment "Test SSM" \
-            --parameters commands='[
-              "pwd",
-              "whoami",
+            --comment "Laravel Deployment" \
+            --parameters 'commands=[
               "cd /var/www/learning_devops_workflow",
-              "pwd",
-              "whoami",
-              "ls -l"
+              "git config --global --add safe.directory /var/www/learning_devops_workflow",
+              "git fetch origin",
+              "git reset --hard origin/master",
+              "composer install --no-dev --optimize-autoloader",
+              "php artisan migrate --force",
+              "php artisan optimize:clear",
+              "php artisan config:cache",
+              "php artisan route:cache",
+              "php artisan view:cache",
+              "sudo systemctl restart apache2"
             ]' \
             --query "Command.CommandId" \
             --output text)
 
           echo "COMMAND_ID=$COMMAND_ID" >> $GITHUB_ENV
           echo "Command ID: $COMMAND_ID"
+
+      # - name: Run ls command via SSM
+      #   run: |
+      #     COMMAND_ID=$(aws ssm send-command \
+      #       --instance-ids $INSTANCE_IDS \
+      #       --document-name "AWS-RunShellScript" \
+      #       --comment "Test SSM" \
+      #       --parameters commands='[
+      #         "pwd",
+      #         "whoami",
+      #         "cd /var/www/learning_devops_workflow",
+      #         "pwd",
+      #         "whoami",
+      #         "ls -l"
+      #       ]' \
+      #       --query "Command.CommandId" \
+      #       --output text)
+
+      #     echo "COMMAND_ID=$COMMAND_ID" >> $GITHUB_ENV
+      #     echo "Command ID: $COMMAND_ID"
 
       - name: Wait for SSM
         run: sleep 20
