@@ -11,7 +11,7 @@ class Post extends Model
 {
     use HasFactory;
 
-    //fillable data try
+    //fillable data try here
      protected $fillable = [
         'user_id',
         'title',
