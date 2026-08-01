@@ -19,6 +19,7 @@ class Post extends Model
         'image_url'
     ];
 
+    //user
     public function user() : BelongsTo
     {
         return $this->belongsTo(User::class);
